@@ -1,0 +1,57 @@
+import java.util.Scanner;
+
+public class OttoCycleCalculator {
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        // --- Input Section ---
+        System.out.println("=== Otto Cycle Efficiency Calculator ===");
+        
+        System.out.print("Enter compression ratio (r): ");
+        double r = sc.nextDouble();
+
+        System.out.print("Enter ratio of specific heats (gamma, typically 1.4): ");
+        double gamma = sc.nextDouble();
+
+        System.out.print("Enter intake temperature T1 [K] (e.g., 300): ");
+        double T1 = sc.nextDouble();
+
+        System.out.print("Enter maximum temperature T3 [K] (e.g., 2000): ");
+        double T3 = sc.nextDouble();
+
+        // --- Constants ---
+        double cv = 0.718; // kJ/kg·K (for air)
+        double cp = gamma * cv;
+        
+        // --- Thermodynamic Relations ---
+        // 1–2 Isentropic compression
+        double T2 = T1 * Math.pow(r, (gamma - 1));
+
+        // 2–3 Constant-volume heat addition (T3 known)
+        double q_in = cv * (T3 - T2); // kJ/kg
+
+        // 3–4 Isentropic expansion
+        double T4 = T3 / Math.pow(r, (gamma - 1));
+
+        // 4–1 Constant-volume heat rejection
+        double q_out = cv * (T4 - T1); // kJ/kg
+
+        // --- Performance ---
+        double W_net = q_in - q_out; // kJ/kg
+        double efficiency = W_net / q_in; // decimal
+        double idealEfficiency = 1 - (1 / Math.pow(r, gamma - 1)); // theoretical ideal
+
+        // --- Output Results ---
+        System.out.println("\n=== Results ===");
+        System.out.printf("T2 = %.2f K%n", T2);
+        System.out.printf("T4 = %.2f K%n", T4);
+        System.out.printf("Heat added (q_in) = %.2f kJ/kg%n", q_in);
+        System.out.printf("Heat rejected (q_out) = %.2f kJ/kg%n", q_out);
+        System.out.printf("Net work (W_net) = %.2f kJ/kg%n", W_net);
+        System.out.printf("Thermal efficiency (calculated) = %.2f%%%n", efficiency * 100);
+        System.out.printf("Ideal thermal efficiency (1 - 1/r^(γ-1)) = %.2f%%%n", idealEfficiency * 100);
+
+        sc.close();
+    }
+}
