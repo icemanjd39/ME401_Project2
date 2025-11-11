@@ -1,0 +1,35 @@
+import java.util.Scanner;
+
+public class RankineCycleCalculator {
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        System.out.println("=== Rankine Cycle Efficiency Calculator ===");
+
+        System.out.print("Enter boiler temperature T_high [K] (e.g., 823 K): ");
+        double T_high = sc.nextDouble();
+
+        System.out.print("Enter condenser temperature T_low [K] (e.g., 315 K): ");
+        double T_low = sc.nextDouble();
+
+        System.out.print("Enter turbine isentropic efficiency (0-1): ");
+        double eta_t = sc.nextDouble();
+
+        System.out.print("Enter pump isentropic efficiency (0-1): ");
+        double eta_p = sc.nextDouble();
+
+        // --- Carnot ideal efficiency ---
+        double eta_carnot = 1 - (T_low / T_high);
+
+        // --- Realistic efficiency (with component losses) ---
+        double eta_actual = eta_carnot * eta_t * eta_p;
+
+        // --- Output ---
+        System.out.println("\n=== Results ===");
+        System.out.printf("Ideal Carnot efficiency = %.2f%%%n", eta_carnot * 100);
+        System.out.printf("Adjusted for turbine/pump = %.2f%%%n", eta_actual * 100);
+
+        sc.close();
+    }
+}
