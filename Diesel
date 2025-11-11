@@ -1,0 +1,28 @@
+import java.util.Scanner;
+
+public class DieselCycleCalculator {
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        System.out.println("=== Diesel Cycle Efficiency Calculator ===");
+
+        System.out.print("Enter compression ratio (r): ");
+        double r = sc.nextDouble();
+
+        System.out.print("Enter cutoff ratio (rc = V3/V2, typically 1.5–3): ");
+        double rc = sc.nextDouble();
+
+        System.out.print("Enter ratio of specific heats (gamma, typically 1.4): ");
+        double gamma = sc.nextDouble();
+
+        // --- Ideal Diesel Cycle Efficiency ---
+        double efficiency = 1 - (1 / Math.pow(r, gamma - 1)) * ((Math.pow(rc, gamma) - 1) / (gamma * (rc - 1)));
+
+        // --- Output ---
+        System.out.println("\n=== Results ===");
+        System.out.printf("Thermal efficiency = %.2f%%%n", efficiency * 100);
+
+        sc.close();
+    }
+}
