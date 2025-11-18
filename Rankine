@@ -1,34 +1,67 @@
 import java.util.Scanner;
 
-public class RankineCycleCalculator {
+public class RankinePowerBased {
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
 
-        System.out.println("=== Rankine Cycle Efficiency Calculator ===");
+        System.out.println("=== Rankine Cycle Power-Based Efficiency Calculator ===");
 
-        System.out.print("Enter boiler temperature T_high [K] (e.g., 823 K): ");
+        // --- User Inputs ---
+        System.out.print("Enter boiler temperature T_high [K] (e.g., 823): ");
         double T_high = sc.nextDouble();
 
-        System.out.print("Enter condenser temperature T_low [K] (e.g., 315 K): ");
+        System.out.print("Enter condenser temperature T_low [K] (e.g., 315): ");
         double T_low = sc.nextDouble();
 
         System.out.print("Enter turbine isentropic efficiency (0-1): ");
-        double eta_t = sc.nextDouble();
+        double eta_turb = sc.nextDouble();
 
         System.out.print("Enter pump isentropic efficiency (0-1): ");
-        double eta_p = sc.nextDouble();
+        double eta_pump = sc.nextDouble();
 
-        // --- Carnot ideal efficiency ---
+        System.out.print("Enter desired net power output [kW]: ");
+        double desiredPower = sc.nextDouble();
+
+        // --- Constants ---
+        // These are simplified values for a 0-D model
+        double cp = 4.18;         // kJ/kg·K (approx liquid water)
+        double h_fg = 2257;       // kJ/kg (latent heat of vaporization at ~1 atm)
+
+        // --- Heat addition (approximation) ---
+        double q_in = h_fg + cp * (T_high - 373); // Add sensible + latent
+
+        // --- Turbine work (ideal Rankine: W = q_in * eta_turb * Carnot_eta) ---
         double eta_carnot = 1 - (T_low / T_high);
+        double w_turb = q_in * eta_carnot * eta_turb;
 
-        // --- Realistic efficiency (with component losses) ---
-        double eta_actual = eta_carnot * eta_t * eta_p;
+        // --- Pump work (very small compared to turbine work) ---
+        double w_pump = 5.0 / eta_pump;   // ~5 kJ/kg typical for water pumps
+
+        // --- Net work ---
+        double w_net = w_turb - w_pump;
+
+        // --- Thermal efficiency ---
+        double efficiency = w_net / q_in;
+
+        // --- Required mass flow rate ---
+        double massFlowRate = desiredPower / w_net;
+
+        // --- Required heat input per second ---
+        double heatInputRate = massFlowRate * q_in;
 
         // --- Output ---
         System.out.println("\n=== Results ===");
-        System.out.printf("Ideal Carnot efficiency = %.2f%%%n", eta_carnot * 100);
-        System.out.printf("Adjusted for turbine/pump = %.2f%%%n", eta_actual * 100);
+        System.out.printf("Heat added per unit mass (q_in) = %.2f kJ/kg%n", q_in);
+        System.out.printf("Turbine work (W_turb) = %.2f kJ/kg%n", w_turb);
+        System.out.printf("Pump work (W_pump) = %.2f kJ/kg%n", w_pump);
+        System.out.printf("Net work (W_net) = %.2f kJ/kg%n", w_net);
+        System.out.printf("Thermal efficiency = %.2f%%%n", efficiency * 100);
+
+        System.out.println("\n--- Power and Flow Results ---");
+        System.out.printf("Desired power output = %.2f kW%n", desiredPower);
+        System.out.printf("Required mass flow rate = %.4f kg/s%n", massFlowRate);
+        System.out.printf("Required heat input rate = %.2f kW%n", heatInputRate);
 
         sc.close();
     }
