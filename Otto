@@ -1,13 +1,13 @@
 import java.util.Scanner;
 
-public class OttoCycleCalculator {
+public class OttoPowerBased {
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
 
-        // --- Input Section ---
-        System.out.println("=== Otto Cycle Efficiency Calculator ===");
-        
+        System.out.println("=== Otto Cycle Power-Based Efficiency Calculator ===");
+
+        // --- User Inputs ---
         System.out.print("Enter compression ratio (r): ");
         double r = sc.nextDouble();
 
@@ -20,37 +20,40 @@ public class OttoCycleCalculator {
         System.out.print("Enter maximum temperature T3 [K] (e.g., 2000): ");
         double T3 = sc.nextDouble();
 
-        // --- Constants ---
-        double cv = 0.718; // kJ/kg·K (for air)
+        System.out.print("Enter desired net power output [kW]: ");
+        double desiredPower = sc.nextDouble();
+
+        // Thermodynamic constants
+        double cv = 0.718; // kJ/kg·K
         double cp = gamma * cv;
-        
-        // --- Thermodynamic Relations ---
-        // 1–2 Isentropic compression
-        double T2 = T1 * Math.pow(r, (gamma - 1));
 
-        // 2–3 Constant-volume heat addition (T3 known)
-        double q_in = cv * (T3 - T2); // kJ/kg
+        // --- Thermodynamic State Calculations ---
+        double T2 = T1 * Math.pow(r, (gamma - 1));          // Isentropic compression
+        double q_in = cv * (T3 - T2);                       // Heat added
+        double T4 = T3 / Math.pow(r, (gamma - 1));          // Isentropic expansion
+        double q_out = cv * (T4 - T1);                      // Heat rejected
 
-        // 3–4 Isentropic expansion
-        double T4 = T3 / Math.pow(r, (gamma - 1));
+        double w_net = q_in - q_out;                        // Net work per kg
+        double thermalEfficiency = w_net / q_in;            // Cycle efficiency
 
-        // 4–1 Constant-volume heat rejection
-        double q_out = cv * (T4 - T1); // kJ/kg
+        // --- Mass Flow Needed for Desired Power ---
+        // Power = ṁ * w_net  => ṁ = Power / w_net
+        double massFlowRate = desiredPower / w_net;         // kg/s
 
-        // --- Performance ---
-        double W_net = q_in - q_out; // kJ/kg
-        double efficiency = W_net / q_in; // decimal
-        double idealEfficiency = 1 - (1 / Math.pow(r, gamma - 1)); // theoretical ideal
+        // --- Required Heat Input (per second) ---
+        double heatInputRate = massFlowRate * q_in;         // kW
 
         // --- Output Results ---
         System.out.println("\n=== Results ===");
         System.out.printf("T2 = %.2f K%n", T2);
         System.out.printf("T4 = %.2f K%n", T4);
-        System.out.printf("Heat added (q_in) = %.2f kJ/kg%n", q_in);
-        System.out.printf("Heat rejected (q_out) = %.2f kJ/kg%n", q_out);
-        System.out.printf("Net work (W_net) = %.2f kJ/kg%n", W_net);
-        System.out.printf("Thermal efficiency (calculated) = %.2f%%%n", efficiency * 100);
-        System.out.printf("Ideal thermal efficiency (1 - 1/r^(γ-1)) = %.2f%%%n", idealEfficiency * 100);
+        System.out.printf("Net work per unit mass (W_net) = %.2f kJ/kg%n", w_net);
+        System.out.printf("Thermal efficiency = %.2f%%%n", thermalEfficiency * 100);
+
+        System.out.println("\n--- Power and Flow Results ---");
+        System.out.printf("Desired power output = %.2f kW%n", desiredPower);
+        System.out.printf("Required mass flow rate = %.4f kg/s%n", massFlowRate);
+        System.out.printf("Required heat input rate = %.2f kW%n", heatInputRate);
 
         sc.close();
     }
