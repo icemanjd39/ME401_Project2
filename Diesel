@@ -1,12 +1,13 @@
 import java.util.Scanner;
 
-public class DieselCycleCalculator {
+public class DieselPowerBased {
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
 
-        System.out.println("=== Diesel Cycle Efficiency Calculator ===");
+        System.out.println("=== Diesel Cycle Power-Based Efficiency Calculator ===");
 
+        // --- User Inputs ---
         System.out.print("Enter compression ratio (r): ");
         double r = sc.nextDouble();
 
@@ -16,12 +17,53 @@ public class DieselCycleCalculator {
         System.out.print("Enter ratio of specific heats (gamma, typically 1.4): ");
         double gamma = sc.nextDouble();
 
-        // --- Ideal Diesel Cycle Efficiency ---
-        double efficiency = 1 - (1 / Math.pow(r, gamma - 1)) * ((Math.pow(rc, gamma) - 1) / (gamma * (rc - 1)));
+        System.out.print("Enter intake temperature T1 [K] (e.g., 300): ");
+        double T1 = sc.nextDouble();
+
+        System.out.print("Enter desired net power output [kW]: ");
+        double desiredPower = sc.nextDouble();
+
+        // Specific heats
+        double cv = 0.718;              // kJ/kg·K for air
+        double cp = gamma * cv;
+
+        // --- Temperature calculations ---
+        // 1 → 2 Isentropic compression
+        double T2 = T1 * Math.pow(r, (gamma - 1));
+
+        // 2 → 3 Constant-pressure heat addition
+        double T3 = T2 * rc;
+
+        // 3 → 4 Isentropic expansion
+        double T4 = T3 * Math.pow(1.0 / (r * rc), (gamma - 1));
+
+        // --- Heat/work terms ---
+        double q_in = cp * (T3 - T2);
+        double q_out = cv * (T4 - T1);
+        double w_net = q_in - q_out;
+
+        // --- Cycle Efficiency ---
+        double efficiency = w_net / q_in;
+
+        // --- Mass flow needed for the desired power ---
+        double massFlowRate = desiredPower / w_net;
+
+        // --- Total heat input per second ---
+        double heatInputRate = massFlowRate * q_in;
 
         // --- Output ---
         System.out.println("\n=== Results ===");
+        System.out.printf("T2 = %.2f K%n", T2);
+        System.out.printf("T3 = %.2f K%n", T3);
+        System.out.printf("T4 = %.2f K%n", T4);
+
+        System.out.printf("Net work per unit mass (W_net) = %.2f kJ/kg%n", w_net);
         System.out.printf("Thermal efficiency = %.2f%%%n", efficiency * 100);
+
+        System.out.println("\n--- Power and Flow Results ---");
+        System.out.printf("Desired power output = %.2f kW%n", desiredPower);
+        System.out.printf("Required mass flow rate = %.4f kg/s%n", massFlowRate);
+        System.out.printf("Required heat input rate = %.2f kW%n", heatInputRate);
 
         sc.close();
     }
