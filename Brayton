@@ -1,45 +1,69 @@
 import java.util.Scanner;
 
-public class BraytonCycleCalculator {
+public class BraytonPowerBased {
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
 
-        System.out.println("=== Brayton Cycle Efficiency Calculator ===");
+        System.out.println("=== Brayton Cycle Power-Based Efficiency Calculator ===");
 
+        // --- User Inputs ---
         System.out.print("Enter pressure ratio (rp = P2/P1): ");
         double rp = sc.nextDouble();
 
         System.out.print("Enter ratio of specific heats (gamma, typically 1.4): ");
         double gamma = sc.nextDouble();
 
-        System.out.print("Enter turbine inlet temperature T3 [K] (e.g., 1500): ");
-        double T3 = sc.nextDouble();
-
         System.out.print("Enter compressor inlet temperature T1 [K] (e.g., 300): ");
         double T1 = sc.nextDouble();
 
-        // --- Efficiency (ideal Brayton) ---
-        double eta_ideal = 1 - 1 / Math.pow(rp, (gamma - 1) / gamma);
+        System.out.print("Enter turbine inlet temperature T3 [K] (e.g., 1500): ");
+        double T3 = sc.nextDouble();
 
-        // --- State temperatures ---
-        double T2 = T1 * Math.pow(rp, (gamma - 1) / gamma);
-        double T4 = T3 / Math.pow(rp, (gamma - 1) / gamma);
+        System.out.print("Enter desired net power output [kW]: ");
+        double desiredPower = sc.nextDouble();
 
-        // --- Heat/work per unit mass (optional energy metrics) ---
-        double cp = 1.005; // kJ/kg·K for air
+        // --- Heat capacity ---
+        double cp = 1.005;     // kJ/kg·K for air
+        double cv = cp / gamma;
+
+        // --- Temperature calculations ---
+        double T2 = T1 * Math.pow(rp, (gamma - 1) / gamma);  // Isentropic compression
+        double T4 = T3 / Math.pow(rp, (gamma - 1) / gamma);  // Isentropic expansion
+
+        // --- Work terms ---
+        double w_compressor = cp * (T2 - T1);
+        double w_turbine = cp * (T3 - T4);
+
+        // --- Heat addition ---
         double q_in = cp * (T3 - T2);
-        double q_out = cp * (T4 - T1);
-        double efficiency_calc = 1 - (q_out / q_in);
+
+        // --- Net work ---
+        double w_net = w_turbine - w_compressor;
+
+        // --- Thermal efficiency ---
+        double efficiency = w_net / q_in;
+
+        // --- Required mass flow rate ---
+        double massFlowRate = desiredPower / w_net;
+
+        // --- Heat input rate ---
+        double heatInputRate = massFlowRate * q_in;
 
         // --- Output ---
         System.out.println("\n=== Results ===");
         System.out.printf("T2 = %.2f K%n", T2);
         System.out.printf("T4 = %.2f K%n", T4);
-        System.out.printf("Heat added (q_in) = %.2f kJ/kg%n", q_in);
-        System.out.printf("Heat rejected (q_out) = %.2f kJ/kg%n", q_out);
-        System.out.printf("Thermal efficiency (from temps) = %.2f%%%n", efficiency_calc * 100);
-        System.out.printf("Ideal thermal efficiency (formula) = %.2f%%%n", eta_ideal * 100);
+
+        System.out.printf("Compressor work = %.2f kJ/kg%n", w_compressor);
+        System.out.printf("Turbine work = %.2f kJ/kg%n", w_turbine);
+        System.out.printf("Net work (W_net) = %.2f kJ/kg%n", w_net);
+        System.out.printf("Thermal efficiency = %.2f%%%n", efficiency * 100);
+
+        System.out.println("\n--- Power and Flow Results ---");
+        System.out.printf("Desired power output = %.2f kW%n", desiredPower);
+        System.out.printf("Required mass flow rate = %.4f kg/s%n", massFlowRate);
+        System.out.printf("Required heat input rate = %.2f kW%n", heatInputRate);
 
         sc.close();
     }
